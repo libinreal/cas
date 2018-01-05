@@ -159,6 +159,7 @@ return [
         /* 
          * CAS Service Providers...
          */
+        Fideloper\Proxy\TrustedProxyServiceProvider::class,
         Leo108\CAS\CASServerServiceProvider::class,
     ],
 
