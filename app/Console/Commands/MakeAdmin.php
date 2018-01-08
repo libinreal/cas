@@ -45,7 +45,7 @@ class MakeAdmin extends Command
     public function handle()
     {
         $name     = 'admin';
-        $email    = 'admin@admin.com';
+        $email    = 'admin@3ti.us';
         $password = $this->option('password') ?: Str::random(12);
         $this->userRepository->create(
             [

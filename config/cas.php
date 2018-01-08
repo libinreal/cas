@@ -14,7 +14,7 @@ return [
         'model' => \App\User::class, //change to your user model class
     ],
     'router'            => [
-        'prefix'      => 'cas/cas',//第一个cas是用户输入的cas对应nginx中的目录cas目录，第二个cas代表/cas/目录下laravel的控制器
+        'prefix'      => 'cas',//第一个cas是用户输入的cas对应nginx中的目录cas目录，第二个cas代表/cas/目录下laravel的控制器
         'name_prefix' => 'cas.',
     ],
     'middleware'        => [
