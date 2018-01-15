@@ -7,10 +7,10 @@ use App\Repositories\ServiceRepository;
 use App\Services\TickerLocker;
 use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Support\ServiceProvider;
-use Leo108\CAS\Contracts\Interactions\UserLogin as UserLoginInterface;
-use Leo108\CAS\Contracts\TicketLocker as TicketLockerInterface;
-use Leo108\CAS\Repositories\ServiceRepository as ServiceRepositoryBase;
-use Leo108\CASServer\OAuth\PluginCenter;
+use App\Contracts\Interactions\UserLogin as UserLoginInterface;
+use App\Contracts\TicketLocker as TicketLockerInterface;
+use App\Repositories\ServiceRepository as ServiceRepositoryBase;
+use App\Plugin\OAuth\PluginCenter;
 use NinjaMutex\Lock\LockAbstract;
 use NinjaMutex\Lock\MySqlLock;
 

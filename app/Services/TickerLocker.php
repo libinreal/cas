@@ -8,7 +8,7 @@
 
 namespace App\Services;
 
-use Leo108\CAS\Contracts\TicketLocker as Contract;
+use App\Contracts\TicketLocker as Contract;
 use NinjaMutex\Lock\LockAbstract;
 
 class TickerLocker implements Contract

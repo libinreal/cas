@@ -12,10 +12,10 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Leo108\CAS\Contracts\Models\UserModel;
-use Leo108\CASServer\OAuth\PluginCenter;
+use App\Contracts\Models\UserModel;
+use App\Plugin\OAuth\PluginCenter;
 use Symfony\Component\HttpFoundation\Response;
-use Leo108\CAS\Contracts\Interactions\UserLogin as Contract;
+use App\Contracts\Interactions\UserLogin as Contract;
 
 class UserLogin implements Contract
 {

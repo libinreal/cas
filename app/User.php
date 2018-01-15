@@ -5,7 +5,7 @@ namespace App;
 use App\Models\UserOauth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Leo108\CAS\Contracts\Models\UserModel;
+use App\Contracts\Models\UserModel;
 
 class User extends Authenticatable implements UserModel
 {

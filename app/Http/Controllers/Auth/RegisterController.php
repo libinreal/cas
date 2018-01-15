@@ -8,7 +8,7 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Leo108\CASServer\OAuth\OAuthUser;
+use App\Plugin\OAuth\OAuthUser;
 
 class RegisterController extends Controller
 {

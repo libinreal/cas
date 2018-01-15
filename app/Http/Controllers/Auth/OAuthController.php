@@ -9,9 +9,9 @@ use App\Traits\Response\ShowMessage;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Leo108\CASServer\OAuth\OAuthUser;
-use Leo108\CASServer\OAuth\Plugin;
-use Leo108\CASServer\OAuth\PluginCenter;
+use App\Plugin\OAuth\OAuthUser;
+use App\Plugin\OAuth\Plugin;
+use App\Plugin\OAuth\PluginCenter;
 
 class OAuthController extends Controller
 {

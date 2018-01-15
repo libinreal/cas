@@ -11,7 +11,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Repositories\ServiceRepository;
-use Leo108\CAS\Models\Service;
+use App\Models\Service;
 
 class ServiceController extends Controller
 {

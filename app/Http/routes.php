@@ -11,23 +11,39 @@
 |
 */
 
+
+/**
+ * oauth/* , admin/* , password/*, 
+ */
+
+$userOptions = [
+    'namespace' => 'App\Http\Controllers',
+    'middleware' => ['web','auth'],
+];
+
 Route::group(
-    [
-        'middleware' => 'auth',
-    ],
+    $userOptions,
     function () {
         Route::get('/', ['as' => 'home', 'uses' => 'HomeController@indexAction']);
         Route::post('changePwd', ['as' => 'password.change.post', 'uses' => 'HomeController@changePwdAction']);
     }
 );
 
-Route::get('oauth/{name}', ['as' => 'oauth.login', 'uses' => 'Auth\OAuthController@login']);
-Route::get('oauth/{name}/callback', ['as' => 'oauth.callback', 'uses' => 'Auth\OAuthController@callback']);
+Route::group(
+    [   
+        'namespace' => 'App\Http\Controllers',
+    ],
+    function (){
+        Route::get('oauth/{name}', ['as' => 'oauth.login', 'uses' => 'Auth\OAuthController@login']);
+        Route::get('oauth/{name}/callback', ['as' => 'oauth.callback', 'uses' => 'Auth\OAuthController@callback']);
+    }
+); 
 
 if (config('cas_server.allow_reset_pwd')) {
     Route::group(
         [
             'middleware' => 'guest',
+            'namespace' => 'App\Http\Controllers',
         ],
         function () {
             Route::get(
@@ -51,7 +67,7 @@ if (config('cas_server.allow_register')) {
     Route::group(
         [
             'middleware' => 'guest',
-            'namespace'  => 'Auth',
+            'namespace'  => 'App\Http\Controllers\Auth',
         ],
         function () {
             Route::get('register', ['as' => 'register.get', 'uses' => 'RegisterController@show']);
@@ -62,7 +78,7 @@ if (config('cas_server.allow_register')) {
 
 Route::group(
     [
-        'namespace'  => 'Admin',
+        'namespace'  => 'App\Http\Controllers\Admin',
         'middleware' => 'admin',
         'prefix'     => 'admin',
     ],
@@ -94,5 +110,36 @@ Route::group(
                 ],
             ]
         );
+    }
+);
+
+
+/**
+ * cas/* 
+ */
+
+$casOptions = [
+    'prefix'    => config('cas.router.prefix'),
+    'namespace' => 'App\Http\Controllers',
+];
+
+if (config('cas.middleware.common')) {
+    $casOptions['middleware'] = config('cas.middleware.common');
+}
+
+Route::group(
+    $casOptions,
+    function () {
+        $auth = config('cas.middleware.auth');
+        $p    = config('cas.router.name_prefix');
+        Route::get('login', 'SecurityController@showLogin')->name($p.'login.get');
+        Route::post('login', 'SecurityController@login')->name($p.'login.post');
+        Route::get('logout', 'SecurityController@logout')->name($p.'logout')->middleware($auth);
+        Route::any('validate', 'ValidateController@v1ValidateAction')->name($p.'v1.validate');
+        Route::any('serviceValidate', 'ValidateController@v2ServiceValidateAction')->name($p.'v2.validate.service');
+        Route::any('proxyValidate', 'ValidateController@v2ProxyValidateAction')->name($p.'v2.validate.proxy');
+        Route::any('proxy', 'ValidateController@proxyAction')->name($p.'proxy');
+        Route::any('p3/serviceValidate', 'ValidateController@v3ServiceValidateAction')->name($p.'v3.validate.service');
+        Route::any('p3/proxyValidate', 'ValidateController@v3ProxyValidateAction')->name($p.'v3.validate.proxy');
     }
 );

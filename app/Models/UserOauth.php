@@ -4,8 +4,8 @@ namespace App\Models;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
-use Leo108\CASServer\OAuth\Plugin;
-use Leo108\CASServer\OAuth\PluginCenter;
+use App\Plugin\OAuth\Plugin;
+use App\Plugin\OAuth\PluginCenter;
 
 class UserOauth extends Model
 {
