@@ -90,7 +90,7 @@ class TicketRepository
         if (!$record) {
             return null;
         }
-        // libin_debug($record);
+        
         return ($checkExpired && $record->isExpired()) ? null : $record;
     }
 

@@ -83,6 +83,7 @@ class ValidateController extends Controller
         $service = $request->get('service', '');
         $ticket  = $request->get('ticket', '');
         if (empty($service) || empty($ticket)) {
+            
             return new Response("no\n");
         }
 
@@ -94,6 +95,7 @@ class ValidateController extends Controller
 
         if (!$record || $record->service_url != $service) {
             $this->unlockTicket($ticket);
+            
             return new Response("no\n");
         }
         // \DB::enableQueryLog();
@@ -103,7 +105,7 @@ class ValidateController extends Controller
 
         if(!$userName)
             $userName = '';
-
+        
         $this->unlockTicket($ticket);
         return new Response("yes\n". $userName);
     }

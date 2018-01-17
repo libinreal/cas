@@ -18,7 +18,7 @@
 
 $userOptions = [
     'namespace' => 'App\Http\Controllers',
-    'middleware' => ['web','auth'],
+    'middleware' => config('cas.middleware'),
 ];
 
 Route::group(
@@ -40,9 +40,12 @@ Route::group(
 ); 
 
 if (config('cas_server.allow_reset_pwd')) {
+    $pwdMiddleware[] = 'guest';
+    $pwdMiddleware[] = config('cas.middleware.common');
+
     Route::group(
         [
-            'middleware' => 'guest',
+            'middleware' => $pwdMiddleware,
             'namespace' => 'App\Http\Controllers',
         ],
         function () {
@@ -64,9 +67,12 @@ if (config('cas_server.allow_reset_pwd')) {
 }
 
 if (config('cas_server.allow_register')) {
+    $regMiddleware[] = 'guest';
+    $regMiddleware[] = config('cas.middleware.common');
+
     Route::group(
         [
-            'middleware' => 'guest',
+            'middleware' => $regMiddleware,
             'namespace'  => 'App\Http\Controllers\Auth',
         ],
         function () {
@@ -76,10 +82,13 @@ if (config('cas_server.allow_register')) {
     );
 }
 
+$adminMiddleware[] = config('cas.middleware.common');
+$adminMiddleware[] = 'admin';
+
 Route::group(
     [
         'namespace'  => 'App\Http\Controllers\Admin',
-        'middleware' => 'admin',
+        'middleware' => $adminMiddleware,
         'prefix'     => 'admin',
     ],
     function () {
@@ -121,11 +130,8 @@ Route::group(
 $casOptions = [
     'prefix'    => config('cas.router.prefix'),
     'namespace' => 'App\Http\Controllers',
+    'middleware' => config('cas.middleware.common')
 ];
-
-if (config('cas.middleware.common')) {
-    $casOptions['middleware'] = config('cas.middleware.common');
-}
 
 Route::group(
     $casOptions,
