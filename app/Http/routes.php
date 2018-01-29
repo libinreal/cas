@@ -13,40 +13,33 @@
 
 
 /**
- * oauth/* , admin/* , password/*, 
+ * index
  */
 
-$userOptions = [
-    'namespace' => 'App\Http\Controllers',
-    'middleware' => config('cas.middleware'),
-];
-
 Route::group(
-    $userOptions,
+    [
+        'middleware' => config('cas.middleware.auth'),
+    ],
     function () {
         Route::get('/', ['as' => 'home', 'uses' => 'HomeController@indexAction']);
         Route::post('changePwd', ['as' => 'password.change.post', 'uses' => 'HomeController@changePwdAction']);
     }
 );
 
-Route::group(
-    [   
-        'namespace' => 'App\Http\Controllers',
-    ],
-    function (){
-        Route::get('oauth/{name}', ['as' => 'oauth.login', 'uses' => 'Auth\OAuthController@login']);
-        Route::get('oauth/{name}/callback', ['as' => 'oauth.callback', 'uses' => 'Auth\OAuthController@callback']);
-    }
-); 
+/**
+ * oauth
+ */
+Route::get('oauth/{name}', ['as' => 'oauth.login', 'uses' => 'Auth\OAuthController@login']);
+Route::get('oauth/{name}/callback', ['as' => 'oauth.callback', 'uses' => 'Auth\OAuthController@callback']);
 
+/**
+ * forget password
+ */    
 if (config('cas_server.allow_reset_pwd')) {
-    $pwdMiddleware[] = 'guest';
-    $pwdMiddleware[] = config('cas.middleware.common');
-
+    
     Route::group(
         [
-            'middleware' => $pwdMiddleware,
-            'namespace' => 'App\Http\Controllers',
+            'middleware' => 'guest',
         ],
         function () {
             Route::get(
@@ -66,14 +59,15 @@ if (config('cas_server.allow_reset_pwd')) {
     );
 }
 
+/**
+ * register
+ */
 if (config('cas_server.allow_register')) {
-    $regMiddleware[] = 'guest';
-    $regMiddleware[] = config('cas.middleware.common');
 
     Route::group(
         [
-            'middleware' => $regMiddleware,
-            'namespace'  => 'App\Http\Controllers\Auth',
+            'middleware' => 'guest',
+            'namespace'  => 'Auth',
         ],
         function () {
             Route::get('register', ['as' => 'register.get', 'uses' => 'RegisterController@show']);
@@ -82,13 +76,13 @@ if (config('cas_server.allow_register')) {
     );
 }
 
-$adminMiddleware[] = config('cas.middleware.common');
-$adminMiddleware[] = 'admin';
-
+/**
+ * admin
+ */
 Route::group(
     [
-        'namespace'  => 'App\Http\Controllers\Admin',
-        'middleware' => $adminMiddleware,
+        'namespace'  => 'Admin',
+        'middleware' => 'admin',
         'prefix'     => 'admin',
     ],
     function () {
@@ -124,13 +118,11 @@ Route::group(
 
 
 /**
- * cas/* 
+ * cas
  */
 
 $casOptions = [
     'prefix'    => config('cas.router.prefix'),
-    'namespace' => 'App\Http\Controllers',
-    'middleware' => config('cas.middleware.common')
 ];
 
 Route::group(

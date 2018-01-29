@@ -18,6 +18,10 @@ return [
         'passwords' => 'users',
     ],
 
+    'cas' => [
+        'guard' => 'cas'
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Guards
@@ -45,6 +49,11 @@ return [
             'driver' => 'token',
             'provider' => 'users',
         ],
+
+        'cas' => [
+            'driver' => 'CasCasSessionGuard',
+            'provider' => 'casusers',
+        ]
     ],
 
     /*
@@ -70,10 +79,10 @@ return [
             'model' => App\User::class,
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'casusers' => [
+            'driver' => 'CasCasUserProvider',
+            'model' => App\Models\CasUser::class,
+        ],
     ],
 
     /*

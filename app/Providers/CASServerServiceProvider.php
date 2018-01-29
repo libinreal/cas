@@ -29,23 +29,6 @@ class CASServerServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (!$this->app->routesAreCached()) {
-            
-            require $this->app->path().'/Http/routes.php';
-        }
-
-        /*$this->publishes(
-            [
-                __DIR__.'/../config/cas.php' => config_path('cas.php'),
-            ],
-            'config'
-        );
-
-        $this->publishes(
-            [
-                __DIR__.'/../database/migrations/' => database_path('migrations'),
-            ],
-            'migrations'
-        );*/
+        
     }
 }
