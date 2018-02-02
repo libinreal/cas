@@ -21,6 +21,8 @@ class UserLogin implements Contract
 {
     use AuthenticatesUsers, ValidatesRequests;
 
+    public $guard;//current guard's name
+
     /**
      * @param Request $request
      * @return UserModel|null
@@ -33,6 +35,14 @@ class UserLogin implements Contract
 
         $credentials            = $this->getCredentials($request);
         $credentials['enabled'] = true;
+        $credentials['service'] = $request->input('service');//added by stephen 2018/01/31
+
+        $this->guard = null;
+        if($credentials['service'])
+        {
+            $this->guard = config('auth.cas.guard');
+        }
+
         if (Auth::guard($this->getGuard())->attempt($credentials, $request->has('remember'))) {
             return Auth::guard($this->getGuard())->user();
         }

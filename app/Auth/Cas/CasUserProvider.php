@@ -1,12 +1,13 @@
 <?php
 
-namespace Illuminate\Auth;
+namespace App\Auth\Cas;
 
 use Illuminate\Support\Str;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 use App\Events\Model\CasUserTokenChangeEvent;
+use Illuminate\Auth\EloquentUserProvider;
 
 class CasUserProvider extends EloquentUserProvider
 {
@@ -42,45 +43,24 @@ class CasUserProvider extends EloquentUserProvider
     }
 
     /**
+     * Override parent method:retrieveByToken
      * Retrieve a user by their "remember me" token.
+     * @param  string  $identifier
      * @param  string  $token
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
      */
-    public function retrieveByToken($token)
+    public function retrieveByToken($identifier, $token = null)
     {
 
         return $this->createModel()
         	->newQuery()
         	->with('serviceUsers')
-            ->where($this->model->getRememberTokenName(), $token)
+            ->where($this->model->getRememberTokenName(), $identifier)
             ->get();
     }
 
     /**
-     * Update the "remember me" token for the given user in storage.
-     *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @param  string  $token
-     * @return void
-     */
-    public function updateRememberToken(UserContract $user, $token)
-    {
-        //get original token 
-        $beforeChangeToken = $user->getRememberToken();
-
-        $change = $user->save();
-
-     
-        if($change)
-        {
-            $user->setRememberToken($token);
-            //fire CasUserTokenChangeEvent
-            // event(new CasUserTokenChangeEvent($beforeChangeToken, $token));
-        }
-     
-    }
-
-    /**
+     * Override parent method:retrieveByCredentials
      * Retrieve a user by the given credentials.
      *
      * @param  array  $credentials
@@ -104,6 +84,30 @@ class CasUserProvider extends EloquentUserProvider
         }
 
         return $query->first();
+    }
+
+    /**
+     * Update the "remember me" token for the given user in storage.
+     *
+     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
+     * @param  string  $token
+     * @return void
+     */
+    public function updateRememberToken(UserContract $user, $token)
+    {
+        //get original token 
+        // $beforeChangeToken = $user->getRememberToken();
+
+        $user->setRememberToken($token);
+        $change = $user->save();
+
+     
+        // if($change)
+        // {
+            //fire CasUserTokenChangeEvent
+            // event(new CasUserTokenChangeEvent($beforeChangeToken, $token));
+        // }
+     
     }
 
     /**

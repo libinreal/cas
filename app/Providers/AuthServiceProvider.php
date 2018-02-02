@@ -28,10 +28,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies($gate);
 
-        $guard = config('auth.cas.guard');
+        /*$guard = config('auth.cas.guard');
         $guardConfig = config("auth.guards.{$guard}");
 
-        libin_debug(CasUserProvider::class);
+        libin_debug(CasUserProvider::class);*/
 
         $this->app
             ->make('auth')
