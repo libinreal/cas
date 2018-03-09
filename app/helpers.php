@@ -1,4 +1,7 @@
 <?php
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+
 /**
  * Created by PhpStorm.
  * User: libin
@@ -41,7 +44,53 @@ function cas_route_uri($name)
     return route_uri($name);
 }
 
+/**
+ * Send a request to remote cas client
+ * @author stephen 2018/03/06
+ *
+ * @param string $method
+ * @param string $host
+ * @param string $uri
+ * @param string $body
+ *
+ * @return string $response
+ */
+function request_cas_client($method, $host, $uri, $body)
+{
+    $method = strtoupper($method);
+
+    $client = new Client([
+        'base_uri' => config('cas.client_protocal').'://'. trim($host,'/').'/'. trim($uri,'/'),
+        'timeout' => 4.0,
+    ]);
+    
+    try{
+        switch ($method) {
+            case 'GET':
+                $response = $client->request(
+                    'GET',
+                    '',
+                    ['query' => $body]
+                );
+                break;
+            case 'POST':
+                $response = $client->request(
+                    'POST',
+                    '',
+                    ['form_params' => $body]
+                );
+                break;
+            default:
+                return '';
+        }
+
+        return $response->getBody();
+    } catch (RequestException $e) {
+        return '';
+    }
+}
+
 function libin_debug( $msg )
 {
-	\Illuminate\Support\Facades\Log::debug(var_export($msg, true));
+	file_put_contents(storage_path().'/logs/libin_debug.log', var_export($msg, true));
 }

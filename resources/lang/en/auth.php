@@ -33,4 +33,8 @@ return [
     'confirm_pwd'  => 'Confirm Password',
     'logged_out'   => 'Logout successful',
     'oauth_bound'  => 'You have bound oauth successfully',
+    'unknown_service'  => 'Unknown service.',
+    'api_error'  => 'Remote url error.Please contact the administrator.',
+    'service_error'  => 'This server is temporarily unable to service request.',
+    'response_error'  => 'Remote resopnse error.',
 ];

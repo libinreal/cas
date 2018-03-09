@@ -14,7 +14,8 @@ class CreateOauthTable extends Migration
     {
         Schema::create('user_oauth', function (Blueprint $table) {
             $table->unsignedInteger('user_id')->primary();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');;
+            //Add foreign key later as the coustom table is possibly not yet created by stephen 2018/03/08
+            // $table->foreign('user_id')->references(config('cas.user_table.id'))->on(config('cas.user_table.name'))->onDelete('cascade');
             $table->timestamps();
         });
     }

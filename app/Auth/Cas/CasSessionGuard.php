@@ -3,13 +3,92 @@ namespace App\Auth\Cas;
 
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use App\Models\CasUser;
+use App\Models\CasServiceUser;
+use App\Models\ServiceHost;
 
 class CasSessionGuard extends SessionGuard
 {
+    protected $serviceId; 
+
+    /**
+     * Override
+     * Get the currently authenticated user relation, that is to say get both App\Models\CasUser and App\Models\CasServiceUser.
+     *
+     * @author libin 2018/03/09
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     */
+    public function user()
+    {
+
+        if ($this->loggedOut) {
+            return;
+        }
+        
+        // If we've already retrieved the user for the current request we can just
+        // return it back immediately. We do not want to fetch the user data on
+        // every call to this method because that would be tremendously slow.
+        /*        
+        if (! is_null($this->user)) {
+            return $this->user;
+        }
+        */
+        /***** If you want to get a CasUser instance,
+                then use below instead, 
+                    by libin 2018/03/09 
+        *****/
+        /*
+        $this->user();
+        $this->user;
+        */
+
+        $id = $this->session->get($this->getName());//Get CasUser id
+        $serviceId = $this->getServiceId();//Get Service id
+        
+        // First we will try to load the user using the identifier in the session if
+        // one exists. Otherwise we will check for a "remember me" cookie in this
+        // request, and if one exists, attempt to retrieve the user using that.
+        $this->user = null;
+        //Not only get the App\Models\CasUser, but also get the related App\Models\CasServiceUser, by stephen 2018/03/09
+        $serviceUser = null;
+        if (! is_null($id)) {
+            $this->user = $this->provider->retrieveById($id);
+            //Get App\Models\CasServiceUser, by stephen 2018/03/09
+            $serviceUser = CasServiceUser::where([
+                'service_id'=> $serviceId,
+                'cas_user_id'=> $id,
+                ])->first();
+        }
+        
+        // If the user is null, but we decrypt a "recaller" cookie we can attempt to
+        // pull the user data on that cookie which serves as a remember cookie on
+        // the application. Once we have a user we can return it to the caller.
+        $recaller = $this->getRecaller();
+
+        if (is_null($this->user) && ! is_null($recaller)) {
+            $this->user = $this->getUserByRecaller($recaller);
+            
+            if ($this->user) {
+                $this->updateSession($this->user->getAuthIdentifier());
+
+                $this->fireLoginEvent($this->user, true);
+                //Get App\Models\CasServiceUser, by stephen 2018/03/09
+                $serviceUser = CasServiceUser::where([
+                    'service_id'=> $serviceId,
+                    'cas_user_id'=> $this->user->id,
+                    ])->first();
+            }
+        }
+
+       
+        // return $this->user = $user;
+        //Only when both App\Models\CasUser and related App\Models\CasServiceUser is found, return the App\Models\CasUser
+        return ($this->user && $serviceUser) ? $this->user : null;
+    }
 
     /**
      * Attempt to authenticate a user using the given credentials.
-     *
+     * Ovreride intending, Other than the cas own database, This authentication use the subsystem database
      * @param  array  $credentials
      * @param  bool   $remember
      * @param  bool   $login
@@ -17,6 +96,8 @@ class CasSessionGuard extends SessionGuard
      */
     public function attempt(array $credentials = [], $remember = true, $login = true)
     {
+        $credentials = $this->_formatCredentials($credentials);
+
         $this->fireAttemptEvent($credentials, $remember, $login);
 
         $this->lastAttempted = $user = $this->provider->retrieveByCredentials($credentials);
@@ -42,163 +123,116 @@ class CasSessionGuard extends SessionGuard
         return false;
     }
 
-	/**
-     * Get the currently authenticated user.
-     *
-     * @return \Illuminate\Contracts\Auth\Authenticatable|null
-     */
-    public function user()
+    private function _formatCredentials(array $credentials)
     {
-
-        if ($this->loggedOut) {
-            return;
-        }
-        
-        // If we've already retrieved the user for the current request we can just
-        // return it back immediately. We do not want to fetch the user data on
-        // every call to this method because that would be tremendously slow.
-        if (! is_null($this->user)) {
-            return $this->user;
+        foreach ($credentials as $k => &$v) {
+            $v = trim($v);
         }
 
-        $token = $this->session->get($this->getName());
+        unset($v);
+        return $credentials;
+    }
 
-        
-        // First we will try to load the user using the identifier in the session if
-        // one exists. Otherwise we will check for a "remember me" cookie in this
-        // request, and if one exists, attempt to retrieve the user using that.
-        $user = null;
+    /**
+     * Override
+     * Log the user out of the service.
+     *
+     * Delete an App\Models\CasServiceUser from the App\Models\CasUser,when all CasServiceUser is removed,delete the related App\Models\CasUser
+     * @author libin 2018/03/09
+     * @return void
+     */
+    public function logout()
+    {
+        $isLogin = $this->user();
 
-        if (! is_null($token)) {
-            $user = $this->provider->retrieveByToken($token);
+        //only can logout when the service parameter is supplied from request and the logging user has been got.
+        if($this->user){
+
+            $this->getServiceId();
+
+            if(!$this->user->service_id && !$this->serviceId)
+                return ;
             
+            $serviceId = $this->serviceId ? $this->serviceId : $this->user->service_id;
+            
+            //delete CasServiceUser related to CasUser
+            if($serviceId){
+                CasServiceUser::where([
+                        'service_id' => $serviceId,
+                        'cas_user_id' => $this->user->id
+                    ])->delete();
+            }else{
+                return ;
+            }
+        }else{//Can not log out without sevice or user.
+            return ;
         }
 
+        //Delete the relation, that is to say deleting the App\Models\CasUser, by libin 2018/03/09
+        if(!$this->user || count($this->user->serviceUsers) == 0){
+            // If we have an event dispatcher instance, we can fire off the logout event
+            // so any further processing can be done. This allows the developer to be
+            // listening for anytime a user signs out of this application manually.
+            $this->clearUserDataFromStorage();
+            //Delete CasUser if relating serviceUsers is empty, by libin 2018/03/09
+            if (!is_null($this->user)) {
+                $this->user->delete();
+            }
 
+            /*
+            if (!is_null($this->user)) {
+                $this->refreshRememberToken($user);
+            }
+            */
+        }
+
+        if (isset($this->events)) {
+            $this->events->fire(new Events\Logout($this->user));
+        }
+
+        // Once we have fired the logout event we will clear the users out of memory
+        // so they are no longer available as the user is no longer considered as
+        // being signed into this application and should not be available here.
+
+        //Added by libin 2018/03/09
+        $tihs->serviceId = null;
+
+        $this->user = null;
         
-        // If the user is null, but we decrypt a "recaller" cookie we can attempt to
-        // pull the user data on that cookie which serves as a remember cookie on
-        // the application. Once we have a user we can return it to the caller.
-        $recaller = $this->getRecaller();
-
-        if (is_null($user) && ! is_null($recaller)) {
-            $user = $this->getUserByRecaller($recaller);
-        }
-
-        if ($user) {
-            $this->updateSession($user->getAuthIdentifier());
-
-            $this->fireLoginEvent($user, true);
-        }
+        $this->loggedOut = true;
         
-        //if empty($user->serviceUsers) $user->delete()
-        //.....
-       
-        return $this->user = $user;
+
     }
 
     /**
-     * Log a user into the application.
+     * Get the id of service by Request.
      *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @param  bool  $remember
-     * @return void
+     * @author libin 2018/03/09
+     * @return int|null $serviceId
      */
-    public function login(AuthenticatableContract $user, $remember = true)
+    public function getServiceId()
     {
-        $this->updateSession($user->getAuthIdentifier());
+        if(!$this->serviceId){
+            $url = $this->request->input('service','');
 
-        // If the user should be permanently "remembered" by the application we will
-        // queue a permanent cookie that contains the encrypted copy of the user
-        // identifier. We will then decrypt this later to retrieve the users.
-        if ($remember) {
-            $this->createRememberTokenIfDoesntExist($user);
+            if($url){
+                $host = parse_url($url, PHP_URL_HOST);
+                $serviceHost = ServiceHost::where('host', $host)->first();
 
-            $this->queueRecallerCookie($user);
+                if (!$serviceHost) {
+                    return ;
+                }else if($serviceHost && $serviceHost->service){
+                    $this->serviceId = $serviceHost->service->id;
+                }else{//Bad relation
+                    return ;
+                }
+
+            }else{//Can not log out without sevice or user.
+                return ;
+            }
         }
 
-        // If we have an event dispatcher instance set we will fire an event so that
-        // any listeners will hook into the authentication events and run actions
-        // based on the login and logout events fired from the guard instances.
-        $this->fireLoginEvent($user, $remember);
-
-        $this->setUser($user);
+        return $this->serviceId;
     }
 
-    /**
-     * Get the token for the currently authenticated user.
-     *
-     * @return string|null $serviceId . '|' . $userName
-     */
-    public function token()
-    {
-        if ($this->loggedOut) {
-            return;
-        }
-
-        $token = $this->session->get($this->getName());
-
-        if (is_null($token) && $this->user()) {
-            $token = $this->user()->getAuthIdentifier();
-        }
-
-        return $token;
-    }
-
-    /**
-     * Update the session with the given token.
-     * @param  array  array($serviceId, $userName)
-     * @return void
-     */
-    protected function updateSession($token)
-    {
-        $this->session->set($this->getName(), $token);
-
-        $this->session->migrate(true);
-    }
-
-    /**
-     * Queue the recaller cookie into the cookie jar.
-     *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @return void
-     */
-    protected function queueRecallerCookie(AuthenticatableContract $user)
-    {
-        $value = $user->getRememberToken();
-
-        $this->getCookieJar()->queue($this->createRecaller($value));
-    }
-
-    /**
-     * Determine if the recaller cookie is in a valid format.
-     *
-     * @param  mixed  $recaller
-     * @return bool
-     */
-    protected function validRecaller($recaller)
-    {
-        if (! is_string($recaller) ) {
-            return false;
-        }
-
-        return strlen($recaller) > 0;
-    }
-
-    /**
-     * Pull a user from the repository by its recaller ID.
-     *
-     * @param  string  $recaller `cas_user`.`token`
-     * @return mixed
-     */
-    protected function getUserByRecaller($recaller)
-    {
-        if ($this->validRecaller($recaller) && ! $this->tokenRetrievalAttempted) {
-            $this->tokenRetrievalAttempted = true;
-
-            $this->viaRemember = ! is_null($user = $this->provider->retrieveByToken($recaller));
-
-            return $user;
-        }
-    }
 }

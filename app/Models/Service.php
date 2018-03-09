@@ -21,14 +21,28 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
     protected $table = 'cas_services';
-    protected $fillable = ['name', 'enabled', 'allow_proxy'];
+    protected $fillable = ['name', 'enabled', 'allow_proxy', 'api'];
     protected $casts = [
-        'enabled'     => 'boolean',
-        'allow_proxy' => 'boolean',
+        'enabled'           => 'boolean',
+        'allow_proxy'       => 'boolean',
     ];
 
     public function hosts()
     {
         return $this->hasMany(ServiceHost::class);
+    }
+
+    public function apis()
+    {
+        return $this->hasMany(ServiceApi::class);
+    }
+
+    /**
+     * Get multi cas users who using the service
+     * @return Relation
+     */
+    public function casUsers()
+    {
+        return $this->belongsToMany(CasUser::class, 'cas_service_users', 'service_id', 'cas_user_id');
     }
 }

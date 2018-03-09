@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Contracts\Events\Dispatcher as DispatcherContract;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
+use App\Models\Service as ServiceModel;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -12,7 +14,11 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array
      */
-    protected $listen = [];
+    protected $listen = [
+        'Illuminate\Database\Events\QueryExecuted' => [
+            'App\Listeners\SqlListener'
+        ]
+    ];
 
     /**
      * The subscriber classes to register.
@@ -32,6 +38,18 @@ class EventServiceProvider extends ServiceProvider
     public function boot(DispatcherContract $events)
     {
         parent::boot($events);
+        $this->_casServiceSaving();
 
+    }
+
+    private function _casServiceSaving()
+    {
+        ServiceModel::saving(function($service){
+            /*if($api = data_get($service, 'api'))
+            {
+                $api = is_array( $api ) ? $api : [];
+                $service->api = \Json::encode($api);
+            }*/
+        });
     }
 }

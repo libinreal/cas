@@ -15,6 +15,7 @@ use App\Repositories\TicketRepository;
 use App\Exceptions\CAS\CasException;
 use App\Models\Ticket;
 use App\User;
+use App\Models\CasUser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Responses\JsonAuthenticationFailureResponse;
@@ -100,14 +101,28 @@ class ValidateController extends Controller
         }
         // \DB::enableQueryLog();
         $this->ticketRepository->invalidTicket($record);
-        // libin_debug(\DB::getQueryLog());
-        $userName = User::find($record->user_id)->getName();
+        
+        // $userName = User::find($record->user_id)->getName();
+        //Use Model Class in config/cas.php file , by stephen 2018/03/08
+        $userModelClass = '\\'.ltrim(config('cas.user_table.model'), '\\');
+        $userModel = new $userModelClass;
+        $user = $userModel->find($record->user_id);
 
-        if(!$userName)
-            $userName = '';
+        if(!$user || !$user->getName()){
+            return new Response("no\n");
+        }
         
         $this->unlockTicket($ticket);
-        return new Response("yes\n". $userName);
+
+        $randomFunc = [$user, 'getRandomStr'];
+
+        $randomStr = '';
+        if(is_callable($randomFunc))
+            $randomStr = call_user_func($randomFunc);
+
+        // file_put_contents(storage_path().'/logs/cms1.login.20180308.log', "yes\n". $user->getName()."\n".$randomStr."\r\n", FILE_APPEND);
+        // return new Response("yes\n". $user->getName()."\n".$randomStr);
+        return new Response("yes\n". $user->getName()."\n".$randomStr);
     }
 
     public function v2ServiceValidateAction(Request $request)

@@ -7,7 +7,7 @@ class CreateServicesTable extends Migration
 {
     /**
      * Run the migrations.
-     *
+     * cas service 表
      * @return void
      */
     public function up()

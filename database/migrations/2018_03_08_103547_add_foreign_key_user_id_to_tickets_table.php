@@ -3,17 +3,17 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class ChangeTicketColumnLength extends Migration
+class AddForeignKeyUserIdToTicketsTable extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * @return void
      */
     public function up()
     {
         Schema::table('cas_tickets', function (Blueprint $table) {
-            $table->string('ticket', 255)->change();
+            $table->foreign('user_id')->references(config('cas.user_table.id'))->on(config('cas.user_table.name'));
         });
     }
 
@@ -25,7 +25,7 @@ class ChangeTicketColumnLength extends Migration
     public function down()
     {
         Schema::table('cas_tickets', function (Blueprint $table) {
-            $table->string('ticket', 32)->change();
+            $table->dropForeign('user_id');
         });
     }
 }

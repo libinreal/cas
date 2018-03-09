@@ -15,20 +15,42 @@ class CasServiceUser extends Model
      * @var array
      */
     protected $fillable = [
-        'service_id',
         'user_name',
-        'token',
+        'service_id',
     ];
-
+    
     protected $table = 'cas_service_users';
-    protected $primaryKey = ['service_id', 'user_name'];
+    protected $primaryKey = ['service_id', 'cas_user_id'];
 
     /**
-     * get the user in the current service
-     * @return \App\Models\CasUser
+     * get the user data of the current service user
+     * @return Relation
      */
-    public function user()
+    public function casUser()
     {
-        return $this->belongsTo('App\Models\CasUser', 'token', 'token');
+        return $this->belongsTo(CasUser::class);
+    }
+
+    /**
+     * get the service data of the current service user
+     * @return Relation
+     */
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    /**
+     * Update the creation and update timestamps.
+     *
+     * @return void
+     */
+    protected function updateTimestamps()
+    {
+        $time = $this->freshTimestamp();
+
+        if (! $this->isDirty(static::UPDATED_AT)) {
+            $this->setUpdatedAt($time);
+        }
     }
 }

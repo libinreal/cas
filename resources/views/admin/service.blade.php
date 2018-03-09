@@ -96,6 +96,68 @@
                         </div>
                         <div class="form-group">
                             <div class="col-sm-6 col-sm-offset-4">
+                                 <button type="button" class="btn btn-default" @click="addApi">@lang('admin.service.add_api')</button>
+                            </div>
+                        </div>
+                        <div v-for="a in editService.api">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">@lang('admin.service.api_name')</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" v-model="a.name" name="api_name[@{{ $index }}]"
+                                           placeholder="@lang('admin.service.api_name_placeholder')">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">@lang('admin.service.api_method')</label>
+                                <div class="col-sm-4">
+                                    <select class="form-control" v-model="a.method" name="api_method[@{{ $index }}]">
+                                      <option>GET</option>
+                                      <option>POST</option>
+                                      <option>PUT</option>
+                                      <option>DELETE</option>
+                                      <option>HEAD</option>
+                                      <option>OPTIONS</option>
+                                      <option>TRACE</option>
+                                      <option>CONNECT</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">@lang('admin.service.api_url')</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" v-model="a.url" name="api_url[@{{ $index }}]"
+                                           placeholder="@lang('admin.service.api_url_placeholder')">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">@lang('admin.service.api_fields')</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" v-model="a.fields" name="api_fields[@{{ $index }}]"
+                                           placeholder="@lang('admin.service.api_fields_placeholder')">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">@lang('admin.service.api_response_fields')</label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control" v-model="a.response_fields" name="api_response_fields[@{{ $index }}]"
+                                           placeholder="@lang('admin.service.api_response_fields_placeholder')">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-6 col-sm-offset-4">
+                                    <button type="button" class="btn btn-default" @click="removeApi($index)">@lang('common.delete')</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-6 col-sm-offset-4">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" v-model="editService.allow_proxy" name="allow_proxy"/>@lang('admin.service.allow_proxy')</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-6 col-sm-offset-4">
                                 <div class="checkbox">
                                 <label><input type="checkbox" v-model="editService.enabled" name="enabled"/>@lang('admin.service.enabled')</label>
                                 </div>

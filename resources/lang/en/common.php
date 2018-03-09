@@ -8,4 +8,5 @@ return [
     'close'   => 'Close',
     'yes'     => 'Yes',
     'no'      => 'No',
+    'delete'  => 'Delete',
 ];

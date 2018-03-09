@@ -24,7 +24,8 @@ class CreateProxyGrantingTicketsTable extends Migration
             $table->timestamp('created_at')->nullable();
             $table->timestamp('expire_at')->nullable();
             $table->foreign('service_id')->references('id')->on('cas_services');
-            $table->foreign('user_id')->references(config('cas.user_table.id'))->on(config('cas.user_table.name'));
+            //Add foreign key later as the coustom table is possibly not yet created by stephen 2018/03/08
+            // $table->foreign('user_id')->references(config('cas.user_table.id'))->on(config('cas.user_table.name'));
         });
     }
 

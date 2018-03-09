@@ -15,6 +15,7 @@ Vue.component('admin-service-index', {
                 enabled: true,
                 allow_proxy: false,
                 hosts: '',
+                api:[],
             },
             busy: false,
             isEdit: false,
@@ -36,6 +37,13 @@ Vue.component('admin-service-index', {
             }
             return arr.join(glu);
         },
+        addApi(){
+            let e = {name:'', url:'', fields:'', response_fields:'', method:'GET'};
+            this.editService.api.push(e);
+        },
+        removeApi(index){
+            this.editService.api.splice(index,1);
+        },
         edit(item) {
             this.isEdit = true;
             this.editService.id = item.id;
@@ -43,6 +51,7 @@ Vue.component('admin-service-index', {
             this.editService.enabled = item.enabled;
             this.editService.allow_proxy = item.allow_proxy;
             this.editService.hosts = this.displayHosts(item.hosts, "\n");
+            this.editService.api = item.apis;
             $('#edit-dialog').modal();
         },
         showAdd() {
@@ -52,6 +61,7 @@ Vue.component('admin-service-index', {
             this.editService.hosts = '';
             this.editService.enabled = true;
             this.editService.allow_proxy = false;
+            this.editService.api = [];
             $('#edit-dialog').modal();
         },
         save() {

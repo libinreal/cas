@@ -81,7 +81,7 @@ return [
     'timezone'             => 'The :attribute must be a valid zone.',
     'unique'               => 'The :attribute has already been taken.',
     'url'                  => 'The :attribute format is invalid.',
-
+    'different_in_array'   => 'The value of the inner-array key  in :attribute must be unique.',
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines
@@ -97,6 +97,10 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+
+        'api' =>[
+            'different_in_array' => 'Each Api Name field in :attribute list must has a unique value'
+        ]
     ],
 
     /*

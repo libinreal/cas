@@ -12,6 +12,7 @@ use App\Exceptions\UserException;
 use App\Traits\ValidateInput;
 use App\Models\Service;
 use App\Models\ServiceHost;
+use App\Models\ServiceApi;
 
 class ServiceRepository
 {
@@ -28,14 +29,20 @@ class ServiceRepository
     protected $serviceHost;
 
     /**
+     * @var ServiceApi;
+     */
+    protected $serviceApi;
+
+    /**
      * ServiceRepository constructor.
      * @param Service     $service
      * @param ServiceHost $serviceHost
      */
-    public function __construct(Service $service, ServiceHost $serviceHost)
+    public function __construct(Service $service, ServiceHost $serviceHost, ServiceApi $serviceApi)
     {
         $this->service     = $service;
         $this->serviceHost = $serviceHost;
+        $this->serviceApi = $serviceApi;
     }
 
     /**
@@ -48,20 +55,21 @@ class ServiceRepository
         $this->validate(
             $data,
             [
-                'name'        => 'required|unique:cas_services',
-                'hosts'       => 'array',
-                'hosts.*'     => 'unique:cas_service_hosts,host',
-                'enabled'     => 'required|boolean',
-                'allow_proxy' => 'required|boolean',
+                'name'              => 'required|unique:cas_services',
+                'hosts'             => 'array',
+                'hosts.*'           => 'unique:cas_service_hosts,host',
+                'api'               => 'array|different_in_array:name',
+                'enabled'           => 'required|boolean',
+                'allow_proxy'       => 'required|boolean',
             ]
         );
 
         \DB::beginTransaction();
         $service = $this->service->create(
             [
-                'name'        => $data['name'],
-                'enabled'     => $data['enabled'],
-                'allow_proxy' => $data['allow_proxy'],
+                'name'              => $data['name'],
+                'enabled'           => $data['enabled'],                
+                'allow_proxy'       => $data['allow_proxy'],
             ]
         );
 
@@ -70,6 +78,19 @@ class ServiceRepository
             $hostModel->service()->associate($service);
             $hostModel->save();
         }
+
+        foreach ($data['api'] as $api) {
+            $apiModel = $this->serviceApi->newInstance([
+                'name'              => trim($api['name']),
+                'url'               => trim($api['url']),
+                'method'            => $api['method'],
+                'fields'            => trim($api['fields']),
+                'response_fields'   => trim($api['response_fields']),
+                ]);
+            $apiModel->service()->associate($service);
+            $apiModel->save();
+        }
+
         \DB::commit();
 
         return $service;
@@ -83,31 +104,48 @@ class ServiceRepository
                 'hosts',
                 'enabled',
                 'allow_proxy',
+                'api',
             ]
         );
 
         \DB::beginTransaction();
 
         $service->hosts()->delete();
+        $service->apis()->delete();
 
         $this->validate(
             $data,
             [
-                'hosts'       => 'array',
-                'hosts.*'     => 'unique:cas_service_hosts,host',
-                'enabled'     => 'boolean',
-                'allow_proxy' => 'boolean',
+                'hosts'             => 'array',
+                'api'               => 'array|different_in_array:name',
+                'hosts.*'           => 'unique:cas_service_hosts,host',
+                'enabled'           => 'boolean',
+                'allow_proxy'       => 'boolean',
             ]
         );
 
         $hosts = array_get($data, 'hosts', []);
-        unset($data['hosts']);
+        $apis = array_get($data, 'api', []);
+
+        unset($data['hosts'], $data['api']);
 
         $service->update($data);
         foreach ($hosts as $host) {
             $hostModel = $this->serviceHost->newInstance(['host' => $host]);
             $hostModel->service()->associate($service);
             $hostModel->save();
+        }
+
+        foreach ($apis as $api) {
+            $apiModel = $this->serviceApi->newInstance([
+                'name'              => trim($api['name']),
+                'url'               => trim($api['url']),
+                'method'            => $api['method'],
+                'fields'            => trim($api['fields']),
+                'response_fields'   => trim($api['response_fields']),
+                ]);
+            $apiModel->service()->associate($service);
+            $apiModel->save();
         }
         \DB::commit();
 
@@ -130,9 +168,9 @@ class ServiceRepository
                 function ($query) use ($like) {
                     $query->where('host', 'like', $like);
                 }
-            )->orWhere('name', 'like', $like)->with('hosts');
+            )->orWhere('name', 'like', $like)->with('hosts')->with('apis');
         } else {
-            $query = $this->service->with('hosts');
+            $query = $this->service->with('hosts')->with('apis');
         }
 
         return $query->orderBy('id', 'desc')->paginate($limit, ['*'], 'page', $page);

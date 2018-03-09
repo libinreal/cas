@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Contracts\Models\UserModel;
 
-class CasUser extends Authenticatable
+class CasUser extends Authenticatable implements UserModel
 {
 
 	/**
@@ -17,10 +17,21 @@ class CasUser extends Authenticatable
     protected $fillable = [
         'token',
         'enabled',
+        'email',
+        'real_name',
+        'name',
+        'service_id',
+    ];
+
+    protected $casts = [
+        'enabled' => 'boolean'
+    ];
+
+    protected $hidden = [
+        'token',
     ];
 
     protected $table = 'cas_users';
-    protected $primaryKey = 'token';
 
     /**
      * Get the column name for the "remember me" token.
@@ -33,26 +44,41 @@ class CasUser extends Authenticatable
     }
 
     /**
-     * Get multi users of services accoding the token
+     * Get multi service users
      * @return Relation
      */
     public function serviceUsers()
     {
-    	return $this->hasMany('App\Models\CasServiceUser', 'token', 'token')->select('token, enabled, service_id, user_name');
+    	return $this->hasMany(CasServiceUser::class);
     }
 
     /**
-     * Get signle user of services accoding the service_id and user_name
+     * Get multi services the user uses
      * @return Relation
      */
-    public function serviceUserByKeys($serviceId, $userName)
+    public function services()
     {
-    	/*libin_debug($this->with('serviceUsers')
-    		->where('service_id', $serviceId)
-    		->where('user_name', $userName)->select('token, enabled, service_id, user_name')->first()->toSql());*/
-    	return $this->with('serviceUsers')
-    		->where('service_id', $serviceId)
-    		->where('user_name', $userName)->select('token, enabled, service_id, user_name');
+        return $this->belongsToMany(Service::class, 'cas_service_users', 'cas_user_id', 'service_id');
+    }
+
+    /**
+     * Get random_str from `cas_service_users`
+     * @return string
+     */
+    public function getRandomStr()
+    {
+        if($this->id && $this->service_id){
+
+            $serviceUser = CasServiceUser::where('service_id', $this->service_id)
+                        ->where('cas_user_id', $this->id)->first();
+            /*if($serviceUser)
+                file_put_contents(storage_path().'/logs/cms1.login.20180308.log', $serviceUser->toJson()."\r\n", FILE_APPEND);
+            else
+                file_put_contents(storage_path().'/logs/cms1.login.20180308.log', "service user not found\r\n", FILE_APPEND);*/
+            return $serviceUser ? $serviceUser->random_str : '';
+        }
+
+        return '';
     }
 
     /**
@@ -63,5 +89,33 @@ class CasUser extends Authenticatable
     public function getAuthPassword()
     {
         return '';
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return $this
+     */
+    public function getEloquentModel()
+    {
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCASAttributes()
+    {
+        return [
+            'email'         => $this->email,
+            'real_name'     => $this->real_name,
+            'oauth_profile' => json_encode($this->oauth->profile),
+        ];
     }
 }

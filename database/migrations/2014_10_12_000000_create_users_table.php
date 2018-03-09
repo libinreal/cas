@@ -8,6 +8,7 @@ class CreateUsersTable extends Migration
     /**
      * Run the migrations.
      *
+     * 原生 cas 后台管理员/普通用户 列表
      * @return void
      */
     public function up()
@@ -22,6 +23,7 @@ class CreateUsersTable extends Migration
             $table->boolean('admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
+            $table->comment = '原生cas用户表，包含管理员和普通帐号，本表只作管理员用，普通用户见 cas_users(用户主表),cas_service_users(用户关联service帐号表)';
         });
     }
 

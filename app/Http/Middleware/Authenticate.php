@@ -17,14 +17,12 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        /*if (Auth::guard($guard)->guest()) {
-            if ($request->ajax() || $request->wantsJson()) {
-                return response('Unauthorized.', 401);
-            } else {
-                return redirect()->guest('login');
-            }
-        }*/
-       
+        //If request has a paramter named as service, then use CasSessionGuard, by libin 2018/03/09
+        $service = $request->input('service','');
+        if($service){
+            $guard = config('auth.cas.guard');
+        }
+
         if (Auth::guard($guard)->guest() || !Auth::guard($guard)->user()->enabled) {
             if (Auth::guard($guard)->user()) {
                 Auth::guard($guard)->logout();

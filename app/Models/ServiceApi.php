@@ -11,25 +11,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class ServiceHost
+ * Class CasServiceApi
  * @package app\Models
  *
  * @property integer $service_id
  * @property Service $service
  */
-class ServiceHost extends Model
+class ServiceApi extends Model
 {
-    protected $table = 'cas_service_hosts';
+    protected $table = 'cas_service_apis';
     public $timestamps = false;
-    protected $fillable = ['host'];
+    protected $fillable = ['name', 'url', 'method', 'fields', 'response_fields'];
 
     public function service()
     {
         return $this->belongsTo(Service::class);
     }
 
-    public function apis()
+    public function hosts()
     {
-    	return $this->belongsToMany(ServiceApi::class, 'cas_service', 'service_id', 'service_id');
+    	return $this->belongsToMany(ServiceHost::class, 'cas_service', 'service_id', 'service_id');
     }
 }

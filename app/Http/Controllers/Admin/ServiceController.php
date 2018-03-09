@@ -51,6 +51,7 @@ class ServiceController extends Controller
     {
         $all          = $request->all();
         $all['hosts'] = $this->formatHosts($request);
+        $all['api'] = $this->formatApis($request);
         $service      = $this->serviceRepository->create($all);
         $service->load('hosts');
 
@@ -61,6 +62,7 @@ class ServiceController extends Controller
     {
         $all          = $request->all();
         $all['hosts'] = $this->formatHosts($request);
+        $all['api'] = $this->formatApis($request);
         $this->serviceRepository->update($all, $service);
 
         return response()->json(['msg' => trans('admin.service.edit_ok')]);
@@ -85,5 +87,11 @@ class ServiceController extends Controller
         }
 
         return $result;
+    }
+
+    protected function formatApis(Request $request)
+    {
+        $apis  = $request->get('api', []);
+        return (array)$apis;
     }
 }

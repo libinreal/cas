@@ -59,8 +59,10 @@ class AuthServiceProvider extends ServiceProvider
                 return $guard;
             })
             ->provider('CasCasUserProvider', function($app, $config){
-                
-                return new CasUserProvider($app['hash'], $config['model']);
+                return new CasUserProvider(
+                    $app['hash'],
+                    $config['model']
+                );
             });
 
         //
