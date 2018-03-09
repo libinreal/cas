@@ -118,7 +118,7 @@ class ValidateController extends Controller
 
         $randomStr = '';
         if(is_callable($randomFunc))
-            $randomStr = call_user_func($randomFunc);
+            $randomStr = call_user_func($randomFunc, $record->service_id);
 
         // file_put_contents(storage_path().'/logs/cms1.login.20180308.log', "yes\n". $user->getName()."\n".$randomStr."\r\n", FILE_APPEND);
         // return new Response("yes\n". $user->getName()."\n".$randomStr);

@@ -21,7 +21,7 @@ class UserLogin implements Contract
 {
     use AuthenticatesUsers, ValidatesRequests;
 
-    public $guard;//current guard's name
+    protected $guard;//current guard's name
 
     /**
      * @param Request $request
@@ -76,7 +76,7 @@ class UserLogin implements Contract
             $this->guard = config('auth.cas.guard');
             return $request->user($this->guard);
         }
-        
+
         //Use original SessionGuard to authorize if request has no parameter of service
         return $request->user();
     }

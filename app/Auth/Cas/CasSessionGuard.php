@@ -153,14 +153,27 @@ class CasSessionGuard extends SessionGuard
             if(!$this->user->service_id && !$this->serviceId)
                 return ;
             
+            //Check the username and random_str is matched the current user
+
+
             $serviceId = $this->serviceId ? $this->serviceId : $this->user->service_id;
             
             //delete CasServiceUser related to CasUser
             if($serviceId){
-                CasServiceUser::where([
+                $casServiceUser = CasServiceUser::where([
                         'service_id' => $serviceId,
                         'cas_user_id' => $this->user->id
-                    ])->delete();
+                    ])->first();
+                //Validate user_name and random_str in the request if an App\Models\CasServiceUser is found.
+                if($casServiceUser){
+
+                    if( !$this->validateRandomStr($casServiceUser, $this->request->input('random_str', '')) 
+                        || !$this->validateUserName($casServiceUser, $this->request->input('user_name', ''))
+                    ){
+                        return ;
+                    }
+                    $casServiceUser->delete();
+                }
             }else{
                 return ;
             }
@@ -202,6 +215,28 @@ class CasSessionGuard extends SessionGuard
         $this->loggedOut = true;
         
 
+    }
+
+    /**
+     * check random_str in CasServiceUser wether is matched with the one in request parameters or not
+     * @param App\Models\CasServiceUser $casServiceUser
+     * @param string $randomStr. the random_str to be validated
+     * @author libin 2018/03/09
+     * @return bool
+     */
+    public function validateRandomStr($casServiceUser, $randomStr){
+        return $casServiceUser->random_str == $randomStr;
+    }
+
+    /**
+     * check user_name in CasServiceUser wether is matched with the one in request parameters or not
+     * @param App\Models\CasServiceUser $casServiceUser
+     * @param string $userName. the user_name to be validated
+     * @author libin 2018/03/09
+     * @return bool
+     */
+    public function validateUserName($casServiceUser, $userName){
+        return $casServiceUser->user_name == $userName;
     }
 
     /**

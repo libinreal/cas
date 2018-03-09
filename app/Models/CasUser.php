@@ -62,14 +62,20 @@ class CasUser extends Authenticatable implements UserModel
     }
 
     /**
-     * Get random_str from `cas_service_users`
+     * Get random_str from `cas_service_users`, 
+     * this random_str is made when user log service in.
+     * @param int $serviceId . Relating service id
+     * @author libin 2018/03/09
      * @return string
      */
-    public function getRandomStr()
+    public function getRandomStr($serviceId)
     {
-        if($this->id && $this->service_id){
+        if(!$serviceId)
+            return '';
 
-            $serviceUser = CasServiceUser::where('service_id', $this->service_id)
+        if($this->id){
+
+            $serviceUser = CasServiceUser::where('service_id', $serviceId)
                         ->where('cas_user_id', $this->id)->first();
             /*if($serviceUser)
                 file_put_contents(storage_path().'/logs/cms1.login.20180308.log', $serviceUser->toJson()."\r\n", FILE_APPEND);
