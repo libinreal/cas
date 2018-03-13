@@ -14,6 +14,7 @@ use App\Events\CasUserLoginEvent;
 use App\Events\CasUserLogoutEvent;
 use App\Exceptions\CAS\CasException;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Repositories\PGTicketRepository;
 use App\Repositories\ServiceRepository;
 use App\Repositories\TicketRepository;
@@ -126,15 +127,23 @@ class SecurityController extends Controller
 
     public function logout(Request $request)
     {
+        //Added by libin 2018/03/12
+        $serviceLogout = false;
         $user = $this->loginInteraction->getCurrentUser($request);
         if ($user) {
-            $this->loginInteraction->logout($request);
+            $serviceLogout = $this->loginInteraction->logout($request);//Added by libin 2018/03/12
             $this->pgTicketRepository->invalidTicketByUser($user);
             event(new CasUserLogoutEvent($request, $user));
         }
         $service = $request->get('service');
         if ($service && $this->serviceRepository->isUrlValid($service)) {
-            return redirect($service);
+            //If log out successfully then return 'ok',otherwise return '',by libin 2018/03/12 
+            // return redirect($service);
+            if($serviceLogout){//Successfully log out
+                return new Response('ok');
+            }else{
+                return new Response('');
+            }
         }
 
         return $this->loginInteraction->showLoggedOut($request);

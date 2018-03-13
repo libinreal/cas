@@ -120,18 +120,17 @@ class UserLogin implements Contract
 
     /**
      * @param Request $request
-     * @return void
+     * @return bool|null
      */
     public function logout(Request $request)
     {
         //If request has a parameter of service use CasSessionGuard, by stephen 2018/01/31
-        $this->guard = null;
         if($request->input('service', ''))//Client system user using CasSessionGuard
         {
             $this->guard = config('auth.cas.guard');
         }
         
-        Auth::guard($this->getGuard())->logout();
+        return Auth::guard($this->getGuard())->logout();
     }
 
     /**

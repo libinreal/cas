@@ -14,7 +14,7 @@ class CreateCasServiceApisTable extends Migration
     public function up()
     {
         Schema::create('cas_service_apis', function (Blueprint $table) {
-            $table->integer('service_id')->unsigned()->comment('cas_services 的外键');
+            $table->integer('service_id')->unsigned()->comment('cas_services 的id');
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
             $table->foreign('service_id')->references('id')->on('cas_services')->onDelete('cascade')->onUpdate('cascade');

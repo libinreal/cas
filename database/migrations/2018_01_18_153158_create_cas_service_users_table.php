@@ -16,8 +16,8 @@ class CreateCasServiceUsersTable extends Migration
         Schema::create('cas_service_users', function (Blueprint $table) {
             $table->charset = 'utf8';
             $table->collation = 'utf8_general_ci';
-            $table->integer('service_id')->unsigned()->comment('cas_services的外键');
-            $table->integer('cas_user_id')->unsigned()->comment('cas_users的外键');
+            $table->integer('service_id')->unsigned()->comment('cas_services的id');
+            $table->integer('cas_user_id')->unsigned()->comment('cas_users的id');
             $table->foreign('cas_user_id')->references('id')->on('cas_users')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('service_id')->references('id')->on('cas_services')->onDelete('cascade')->onUpdate('cascade');
             $table->primary(['service_id', 'cas_user_id']);

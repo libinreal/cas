@@ -139,7 +139,7 @@ class CasSessionGuard extends SessionGuard
      *
      * Delete an App\Models\CasServiceUser from the App\Models\CasUser,when all CasServiceUser is removed,delete the related App\Models\CasUser
      * @author libin 2018/03/09
-     * @return void
+     * @return bool|null
      */
     public function logout()
     {
@@ -214,7 +214,7 @@ class CasSessionGuard extends SessionGuard
         
         $this->loggedOut = true;
         
-
+        return true;    
     }
 
     /**
