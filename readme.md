@@ -1,27 +1,33 @@
-# Laravel PHP Framework
+CAS Server
+==
 
-[![Build Status](https://travis-ci.org/laravel/framework.svg)](https://travis-ci.org/laravel/framework)
-[![Total Downloads](https://poser.pugx.org/laravel/framework/d/total.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/framework/v/stable.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/framework/v/unstable.svg)](https://packagist.org/packages/laravel/framework)
-[![License](https://poser.pugx.org/laravel/framework/license.svg)](https://packagist.org/packages/laravel/framework)
+Base on Laravel 5.2.45
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as authentication, routing, sessions, queueing, and caching.
+DIRECTORY STRUCTURE
+-------------------
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications. A superb inversion of control container, expressive migration system, and tightly integrated unit testing support give you the tools you need to build any application with which you are tasked.
+      app/             		CAS的主要实现代码
+      bootstrap/            应用启动脚本
+      config/             	配置文件
+      database/        		数据库迁移文件
+      public/               经过 gulp发布后的
+      resources/            静态资源文件以及其它资源包，如CSS，Js，语言，视图文件
+      storage					
+      tests/              
+      vendor/                Laravel框架核心类以及其它第三方库
+    
 
-## Official Documentation
 
-Documentation for the framework can be found on the [Laravel website](http://laravel.com/docs).
+说明
+------------
 
-## Contributing
+### 前端视图的数据绑定
+Vue v1.0
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
+### 前端静态资源编译
+Elixir
 
-## Security Vulnerabilities
+### 核心代码
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell at taylor@laravel.com. All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
+App\Auth\Cas\CasSessionGuard.php
+App\Auth\Cas\CasUserProvider.php
